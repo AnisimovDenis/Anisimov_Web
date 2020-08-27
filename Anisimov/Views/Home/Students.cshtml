@@ -1,10 +1,10 @@
-﻿@model IEnumerable<Anisimov.ViewModels.EmployeeViewModel>
+﻿@model IEnumerable<Anisimov.ViewModels.StudentViewModel>
 
 @{
-    ViewData["Title"] = "Employees";
+    ViewData["Title"] = "Students";
 }
 
-<h1>Employees</h1>
+<h1>Students</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -22,13 +22,10 @@
                 @Html.DisplayNameFor(model => model.SurName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Patronymic)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Age)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Position)
+                @Html.DisplayNameFor(model => model.Class)
             </th>
             <th></th>
         </tr>
@@ -47,16 +44,13 @@
                     @Html.DisplayFor(modelItem => item.SurName)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Patronymic)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.Age)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Position)
+                    @Html.DisplayFor(modelItem => item.Class)
                 </td>
                 <td>
-                    @Html.ActionLink("Details", "EmployeeDetails", new { id = item.Id })
+                    @Html.ActionLink("Details", "StudentDetails", new { id = item.Id })
                 </td>
             </tr>
         }

@@ -31,6 +31,26 @@ namespace Anisimov.Controllers
             }
         };
 
+        private readonly List<StudentViewModel> _students = new List<StudentViewModel>
+        {
+            new StudentViewModel
+            {
+                Id = 1,
+                FirstName = "Иван",
+                SurName = "Иванов",
+                Age = 22,
+                Class = 4
+            },
+            new StudentViewModel
+            {
+                Id = 2,
+                FirstName = "Владислав",
+                SurName = "Петров",
+                Age = 35,
+                Class = 3
+            }
+        };
+
         public IActionResult Index()
         {
             return View();
@@ -49,6 +69,21 @@ namespace Anisimov.Controllers
                 return NotFound();
 
             return View(employee);
+        }
+
+        public IActionResult Students()
+        {
+            return View(_students);
+        }
+
+        public IActionResult StudentDetails(int id)
+        {
+            var student = _students.FirstOrDefault(x => x.Id == id);
+
+            if (student == null)
+                return NotFound();
+
+            return View(student);
         }
     }
 }
