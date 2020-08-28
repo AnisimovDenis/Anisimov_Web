@@ -35,7 +35,9 @@ namespace Anisimov
                 app.UseDeveloperExceptionPage();
             }
 
-            var helloString = _configuration["CustomHelloWorld"];
+            app.UseStaticFiles();
+
+            //var helloString = _configuration["CustomHelloWorld"];
 
             app.UseRouting();
 
