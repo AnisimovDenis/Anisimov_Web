@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Anisimov.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,6 +37,8 @@ namespace Anisimov
             }
 
             app.UseStaticFiles();
+
+            app.UseMiddleware<TokenMiddleware>();
 
             //var helloString = _configuration["CustomHelloWorld"];
 
