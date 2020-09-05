@@ -28,7 +28,7 @@ namespace Anisimov.Controllers
             return View();
         }
 
-        public IActionResult Cheakout()
+        public IActionResult Checkout()
         {
             return View();
         }
@@ -49,6 +49,11 @@ namespace Anisimov.Controllers
         }
 
         public IActionResult Shop()
+        {
+            return View();
+        }
+
+        public IActionResult Error()
         {
             return View();
         }
