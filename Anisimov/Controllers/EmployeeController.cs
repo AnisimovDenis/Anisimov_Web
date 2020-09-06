@@ -75,5 +75,12 @@ namespace Anisimov.Controllers
 
             return RedirectToAction(nameof(Employees));
         }
+
+        [Route("delete/{id}")]
+        public IActionResult Delete(int id)
+        {
+            this.employeesService.Delete(id);
+            return RedirectToAction(nameof(Employees));
+        }
     }
 }
