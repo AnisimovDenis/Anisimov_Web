@@ -2,68 +2,33 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Anisimov.Infrastructure.Interfaces;
 using Anisimov.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Anisimov.Controllers
 {
+    //[Route("users/[action]")]
+    [Route("users")]
     public class EmployeeController : Controller
     {
-        private readonly List<EmployeeViewModel> _employees = new List<EmployeeViewModel>
-        {
-            new EmployeeViewModel
-            {
-                Id = 1,
-                FirstName = "Иван",
-                SurName = "Иванов",
-                Patronymic = "Иванович",
-                Age = 22,
-                Position = "Начальник"
-            },
-            new EmployeeViewModel
-            {
-                Id = 2,
-                FirstName = "Владислав",
-                SurName = "Петров",
-                Patronymic = "Иванович",
-                Age = 35,
-                Position = "Программист"
-            }
-        };
+        private readonly IEmployeesService employeesService;
 
-        private readonly List<StudentViewModel> _students = new List<StudentViewModel>
+        public EmployeeController(IEmployeesService employeesService)
         {
-            new StudentViewModel
-            {
-                Id = 1,
-                FirstName = "Иван",
-                SurName = "Иванов",
-                Age = 22,
-                Class = 4
-            },
-            new StudentViewModel
-            {
-                Id = 2,
-                FirstName = "Владислав",
-                SurName = "Петров",
-                Age = 35,
-                Class = 3
-            }
-        };
-
-        public IActionResult Index()
-        {
-            return View();
+            this.employeesService = employeesService;
         }
 
+        [Route("all")]
         public IActionResult Employees()
         {
-            return View(_employees);
+            return View(this.employeesService.GetAll());
         }
 
+        [Route("{id}")]
         public IActionResult EmployeeDetails(int id)
         {
-            var employee = _employees.FirstOrDefault(x => x.Id == id);
+            var employee = this.employeesService.GetById(id);
 
             if (employee == null)
                 return NotFound();
@@ -71,19 +36,51 @@ namespace Anisimov.Controllers
             return View(employee);
         }
 
-        public IActionResult Students()
+        [HttpGet]
+        [Route("edit/{id?}")]
+        public IActionResult Edit(int? id)
         {
-            return View(_students);
+            if (!id.HasValue)
+                return View(new EmployeeViewModel());
+
+            var model = this.employeesService.GetById(id.Value);
+            if (model == null)
+                return NotFound();// возвращаем результат 404 Not Found
+
+            return View(model);
         }
 
-        public IActionResult StudentDetails(int id)
+        [HttpPost]
+        [Route("edit/{id?}")]
+        public IActionResult Edit(EmployeeViewModel model)
         {
-            var student = _students.FirstOrDefault(x => x.Id == id);
+            if (model.Id > 0) // если есть Id, то редактируем модель
+            {
+                var dbItem = this.employeesService.GetById(model.Id);
 
-            if (student == null)
-                return NotFound();
+                if (ReferenceEquals(dbItem, null))
+                    return NotFound();// возвращаем результат 404 Not Found
 
-            return View(student);
+                dbItem.FirstName = model.FirstName;
+                dbItem.SurName = model.SurName;
+                dbItem.Age = model.Age;
+                dbItem.Patronymic = model.Patronymic;
+                dbItem.Position = model.Position;
+            }
+            else // иначе добавляем модель в список
+            {
+                this.employeesService.AddNew(model);
+            }
+            this.employeesService.Commit(); // станет актуальным позднее (когда добавим БД)
+
+            return RedirectToAction(nameof(Employees));
+        }
+
+        [Route("delete/{id}")]
+        public IActionResult Delete(int id)
+        {
+            this.employeesService.Delete(id);
+            return RedirectToAction(nameof(Employees));
         }
     }
 }
