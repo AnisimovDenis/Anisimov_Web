@@ -9,6 +9,9 @@ namespace Anisimov.Infrastructure.Interfaces
     public interface IProductService
     {
         IEnumerable<Category> GetCategories();
+
         IEnumerable<Brand> GetBrands();
+
+        IEnumerable<Product> GetProducts(ProductFilter filter);
     }
 }
