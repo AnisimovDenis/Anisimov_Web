@@ -30,6 +30,8 @@ namespace Anisimov
             services.AddMvc();
 
             services.AddSingleton<IEmployeesService, InMemoryEmployeesService>();
+
+            services.AddSingleton<IStudentsService, InMemoryStudentsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
