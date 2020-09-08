@@ -21,8 +21,9 @@ namespace Anisimov.Controllers
         {
             return View(this.studentsService.GetAll());
         }
+        
         [Route("{id}")]
-        public IActionResult EmployeeDetails(int id)
+        public IActionResult StudentDetails(int id)
         {
             var employee = this.studentsService.GetById(id);
 
@@ -37,7 +38,7 @@ namespace Anisimov.Controllers
         public IActionResult Edit(int? id)
         {
             if (!id.HasValue)
-                return View(new EmployeeViewModel());
+                return View(new StudentViewModel());
 
             var model = this.studentsService.GetById(id.Value);
             if (model == null)
