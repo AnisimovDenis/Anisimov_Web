@@ -54,6 +54,16 @@ namespace Anisimov.Controllers
         [Route("edit/{id?}")]
         public IActionResult Edit(EmployeeViewModel model)
         {
+            if (model.Age < 18 || model.Age > 100)
+            {
+                ModelState.AddModelError("Age", "Ошибка возраста");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             if (model.Id > 0) // если есть Id, то редактируем модель
             {
                 var dbItem = this.employeesService.GetById(model.Id);
