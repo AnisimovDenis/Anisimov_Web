@@ -20,6 +20,8 @@ namespace Anisimov.Domain.Entities
 
         public decimal Price { get; set; }
 
+        public string Manufacturer { get; set; }
+
         [ForeignKey("CategoryId")]
         public virtual Category Category { get; set; }
 
