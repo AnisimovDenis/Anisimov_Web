@@ -22,6 +22,8 @@ namespace Anisimov.Domain.Entities
 
         public string Manufacturer { get; set; }
 
+        public int Sale { get; set; }
+
         [ForeignKey("CategoryId")]
         public virtual Category Category { get; set; }
 

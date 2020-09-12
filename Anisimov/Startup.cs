@@ -33,7 +33,7 @@ namespace Anisimov
 
             services.AddSingleton<IStudentsService, InMemoryStudentsService>();
 
-            services.AddSingleton<IProductService, InMemoryProductService>();
+            services.AddScoped<IProductService, SqlProductService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
