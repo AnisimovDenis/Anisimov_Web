@@ -9,11 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Anisimov.Controllers
 {
-    
+
     public class AccountController : Controller
     {
         private readonly UserManager<User> _userManager;
-
         private readonly SignInManager<User> _signInManager;
 
         public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
@@ -26,6 +25,38 @@ namespace Anisimov.Controllers
         public IActionResult Login()
         {
             return View(new LoginViewModel());
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var loginResult = await _signInManager.PasswordSignInAsync(model.UserName,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false);
+
+            if (!loginResult.Succeeded)
+            {
+                ModelState.AddModelError("", "Вход невозможен");//говорим пользователю что вход невозможен
+                return View(model);
+            }
+
+            if (Url.IsLocalUrl(model.ReturnUrl))
+            {
+                return Redirect(model.ReturnUrl); //перенаправляем туда, откуда пришли
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
@@ -45,40 +76,17 @@ namespace Anisimov.Controllers
 
             if (!createResult.Succeeded)
             {
-                foreach (var identityError in createResult.Errors)
+                foreach (var identityError in createResult.Errors)//выводим ошибки
                 {
                     ModelState.AddModelError("", identityError.Description);
                     return View(model);
                 }
             }
 
-            await _signInManager.SignInAsync(user, false);
+            await _userManager.AddToRoleAsync(user, "Users");
+            await _signInManager.SignInAsync(user, false);//если успешно - логинимся
             return RedirectToAction("Index", "Home");
         }
 
-        [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            var loginResult = await _signInManager.PasswordSignInAsync(model.UserName,
-                model.Password,
-                model.RememberMe,
-                lockoutOnFailure: false);
-
-            if (!loginResult.Succeeded)
-            {
-                ModelState.AddModelError("", "Вход невозможен");
-                return View(model);
-            }
-
-            if(Url.IsLocalUrl(model.ReturnUrl))
-            {
-                return Redirect(model.ReturnUrl);
-            }
-
-            return RedirectToAction("Index", "Home");
-        }
     }
 }

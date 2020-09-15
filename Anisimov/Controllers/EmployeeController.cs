@@ -4,46 +4,59 @@ using System.Linq;
 using System.Threading.Tasks;
 using Anisimov.Infrastructure.Interfaces;
 using Anisimov.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Anisimov.Controllers
 {
     //[Route("users/[action]")]
     [Route("users")]
+    [Authorize]
     public class EmployeeController : Controller
     {
-        private readonly IEmployeesService employeesService;
+        private readonly IEmployeesService _employeesService;
 
         public EmployeeController(IEmployeesService employeesService)
         {
-            this.employeesService = employeesService;
+            _employeesService = employeesService;
         }
 
         [Route("all")]
+        [AllowAnonymous]
         public IActionResult Employees()
         {
-            return View(this.employeesService.GetAll());
+            return View(_employeesService.GetAll());
         }
 
         [Route("{id}")]
+        [Authorize(Roles = "Admins, Users")]
         public IActionResult EmployeeDetails(int id)
         {
-            var employee = this.employeesService.GetById(id);
+            //Получаем сотрудника по Id
+            var employee = _employeesService.GetById(id);
 
+            //Если такого не существует
             if (employee == null)
-                return NotFound();
+                return NotFound(); // возвращаем результат 404 Not Found
 
+            //Иначе возвращаем сотрудника
             return View(employee);
         }
 
+        /// <summary>
+        /// Добавление или редактирование сотрудника
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("edit/{id?}")]
+        [Authorize(Roles = "Admins")]
         public IActionResult Edit(int? id)
         {
             if (!id.HasValue)
                 return View(new EmployeeViewModel());
 
-            var model = this.employeesService.GetById(id.Value);
+            var model = _employeesService.GetById(id.Value);
             if (model == null)
                 return NotFound();// возвращаем результат 404 Not Found
 
@@ -52,21 +65,24 @@ namespace Anisimov.Controllers
 
         [HttpPost]
         [Route("edit/{id?}")]
+        [Authorize(Roles = "Admins")]
         public IActionResult Edit(EmployeeViewModel model)
         {
             if (model.Age < 18 || model.Age > 100)
             {
-                ModelState.AddModelError("Age", "Ошибка возраста");
+                ModelState.AddModelError("Age", "Ошибка возраста!");
             }
 
+            // Проверяем модель на валидность
             if (!ModelState.IsValid)
             {
+                // Если не валидна, возвращаем ее на представление
                 return View(model);
             }
 
             if (model.Id > 0) // если есть Id, то редактируем модель
             {
-                var dbItem = this.employeesService.GetById(model.Id);
+                var dbItem = _employeesService.GetById(model.Id);
 
                 if (ReferenceEquals(dbItem, null))
                     return NotFound();// возвращаем результат 404 Not Found
@@ -79,18 +95,25 @@ namespace Anisimov.Controllers
             }
             else // иначе добавляем модель в список
             {
-                this.employeesService.AddNew(model);
+                _employeesService.AddNew(model);
             }
-            this.employeesService.Commit(); // станет актуальным позднее (когда добавим БД)
+            _employeesService.Commit(); // станет актуальным позднее (когда добавим БД)
 
             return RedirectToAction(nameof(Employees));
         }
 
+        /// <summary>
+        /// Удаление сотрудника
+        /// </summary>
+        /// <param name="id">Id сотрудника</param>
+        /// <returns></returns>
         [Route("delete/{id}")]
+        [Authorize(Roles = "Admins")]
         public IActionResult Delete(int id)
         {
-            this.employeesService.Delete(id);
+            _employeesService.Delete(id);
             return RedirectToAction(nameof(Employees));
         }
+
     }
 }

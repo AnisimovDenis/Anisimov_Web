@@ -84,13 +84,14 @@ namespace Anisimov
 
             app.UseStaticFiles();
 
+            app.UseRouting();
+
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseMiddleware<TokenMiddleware>();
 
             //var helloString = _configuration["CustomHelloWorld"];
-
-            app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
