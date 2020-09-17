@@ -12,6 +12,7 @@ using System.Data.Common;
 using Microsoft.AspNetCore.Identity;
 using Anisimov.Domain.Entities;
 using System;
+using Microsoft.AspNetCore.Http;
 
 namespace Anisimov
 {
@@ -72,6 +73,10 @@ namespace Anisimov
                 options.AccessDeniedPath = "/Account/AccessDenied"; // If the AccessDeniedPath is not set here, ASP.NET Core will default to /Account/AccessDenied
                 options.SlidingExpiration = true;
             });
+
+            //Настройки для корзины
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<ICartService, CookieCartService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -84,13 +89,14 @@ namespace Anisimov
 
             app.UseStaticFiles();
 
+            app.UseRouting();
+
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseMiddleware<TokenMiddleware>();
 
             //var helloString = _configuration["CustomHelloWorld"];
-
-            app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
