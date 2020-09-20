@@ -85,6 +85,8 @@ namespace Anisimov
             services.AddScoped<ICartService, CookieCartService>();
 
             services.AddSingleton<IStudentsService, InMemoryStudentsService>();
+
+            services.AddScoped<IOrdersService, SqlOrdersService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
