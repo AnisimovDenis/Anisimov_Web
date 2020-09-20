@@ -29,15 +29,21 @@ namespace Anisimov
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options => options.Filters.Add(new SimpleActionFilter()));
+            services.AddMvc(options =>
+            {
+                //options.Filters.Add(typeof(SimpleActionFilter)); // подключение по типу
+
+                // альтернативный вариант подключени€
+                options.Filters.Add(new SimpleActionFilter()); // подключение по объекту
+            });
 
             services.AddDbContext<WebStoreContext>(options => options
                 .UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
 
+            // ƒобавл€ем разрешение зависимости
             services.AddSingleton<IEmployeesService, InMemoryEmployeesService>();
-
-            services.AddSingleton<IStudentsService, InMemoryStudentsService>();
-
+            // services.AddScoped<IEmployeesService, InMemoryEmployeesService>();
+            //services.AddTransient<IEmployeesService, InMemoryEmployeesService>();
             services.AddScoped<IProductService, SqlProductService>();
 
             services.AddIdentity<User, IdentityRole>()
@@ -77,6 +83,8 @@ namespace Anisimov
             //Ќастройки дл€ корзины
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<ICartService, CookieCartService>();
+
+            services.AddSingleton<IStudentsService, InMemoryStudentsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -94,19 +102,76 @@ namespace Anisimov
             app.UseAuthentication();
             app.UseAuthorization();
 
+            var helloString = _configuration["CustomHelloWorld"];
+            //var helloString = _configuration["Logging:LogLevel:Default"];
+
+            app.UseWelcomePage("/welcome");
+
             app.UseMiddleware<TokenMiddleware>();
 
-            //var helloString = _configuration["CustomHelloWorld"];
+            UseMiddlewareSample(app);
+
+            app.Map("/index", CustomIndexHandler);
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                // endpoints.MapDefaultControllerRoute(); // краткий аналог
+                endpoints.MapControllerRoute(
+                    name: "areas",
+                    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                // https://localhost:44317/    home            /index
+                // https://localhost:44317/
+                // ћаршрут по умолчанию состоит из трЄх частей разделЄнных У/Ф
+                // ѕервой частью указываетс€ им€ контроллера,
+                // второй - им€ действи€ (метода) в контроллере,
+                // третей - опциональный параметр с именем УidФ
+                // ≈сли часть не указана - используютс€ значени€ по умолчанию:
+                // дл€ контроллера им€ УHomeФ,
+                // дл€ действи€ - УIndexФ
+
 
                 //endpoints.MapGet("/", async context =>
                 //{
-                //    await context.Response.WriteAsync("Hello World!");
+                //    await context.Response.WriteAsync(helloString);
                 //});
             });
+
+            app.Run(async (context) =>
+            {
+                await context.Response.WriteAsync("No handler found for this request...");
+            });
         }
+
+        private void CustomIndexHandler(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("response to /Index URL...");
+            });
+        }
+
+        private void UseMiddlewareSample(IApplicationBuilder app)
+        {
+            app.Use(async (context, next) =>
+            {
+                bool isError = false;
+                // ...
+                if (isError)
+                {
+                    await context.Response
+                        .WriteAsync("Error occured. You're in custom pipeline module...");
+                }
+                else
+                {
+                    await next.Invoke();
+                }
+            });
+        }
+
     }
 }
